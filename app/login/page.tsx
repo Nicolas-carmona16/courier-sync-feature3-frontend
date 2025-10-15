@@ -14,6 +14,7 @@ import { validateForm, type ValidationErrors } from "@/components/form-validatio
 
 export default function LoginPage() {
   const router = useRouter()
+  
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -52,14 +53,34 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // In a real app, you would authenticate here
-      console.log("Login attempt:", formData)
-
-      // Redirect to profile on success
-      router.push("/profile")
+      // NOTE: This is a basic login implementation for development
+      // The backend doesn't have authentication endpoints yet
+      // For now, we'll use a simple approach:
+      // 1. Check if user exists in localStorage (from registration)
+      // 2. In production, you should implement proper authentication
+      
+      const existingUser = localStorage.getItem('currentUser')
+      
+      if (existingUser) {
+        const user = JSON.parse(existingUser)
+        
+        // Check if email matches
+        if (user.correo.toLowerCase() === formData.email.toLowerCase()) {
+          // In a real app, you would validate the password hash here
+          // For now, we'll just check if password is not empty
+          if (formData.password.length > 0) {
+            console.log("Login successful:", user)
+            router.push("/profile")
+            return
+          }
+        }
+      }
+      
+      // If no existing user or email doesn't match
+      setErrors({ 
+        general: "Credenciales incorrectas. Si no tienes cuenta, regístrate primero." 
+      })
+      
     } catch (error) {
       console.error("Login error:", error)
       setErrors({ general: "Error al iniciar sesión. Intenta nuevamente." })

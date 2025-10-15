@@ -1,17 +1,45 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { BackLink } from "@/components/back-link"
 import { CourierLogo } from "@/components/courier-logo"
 import { Button } from "@/components/ui/button"
 import { StatusBadge } from "@/components/status-badge"
+import { Usuario } from "@/lib/graphql/types"
 
 export default function ProfilePage() {
-  // Mock user data - in a real app, this would come from your auth system
-  const userData = {
-    fullName: "Nombre Apellido",
-    email: "correo@email.com",
-    phone: "+57 302 545 4545",
-    address: "Carrera 23 # 43 - 23 Medellín Antioquia",
-    registrationDate: "12/09/2025",
+  const [userData, setUserData] = useState<Usuario | null>(null)
+
+  useEffect(() => {
+    // Get user data from localStorage (in a real app, this would come from auth context)
+    const storedUser = localStorage.getItem('currentUser')
+    if (storedUser) {
+      try {
+        setUserData(JSON.parse(storedUser))
+      } catch (error) {
+        console.error('Error parsing user data:', error)
+      }
+    }
+  }, [])
+
+  if (!userData) {
+    return (
+      <div className="courier-layout">
+        <div className="courier-two-column">
+          <div>
+            <BackLink href="/">Volver al inicio</BackLink>
+            <CourierLogo subtitle="Panel de usuario" />
+            <div className="text-center py-10">
+              <p className="text-gray-600">No hay datos de usuario disponibles.</p>
+              <Link href="/register" className="text-courier-navy hover:underline">
+                Registrarse
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -34,32 +62,42 @@ export default function ProfilePage() {
             <div className="space-y-5">
               <div className="courier-info-item">
                 <div className="courier-info-label">👤 Nombre Completo:</div>
-                <div className="courier-info-value">{userData.fullName}</div>
+                <div className="courier-info-value">{userData.nombre}</div>
               </div>
 
               <div className="courier-info-item">
                 <div className="courier-info-label">✉️ Correo Electrónico:</div>
-                <div className="courier-info-value">{userData.email}</div>
-              </div>
-
-              <div className="courier-info-item">
-                <div className="courier-info-label">🔒 Contraseña:</div>
-                <div className="courier-info-value">••••••••••••••</div>
+                <div className="courier-info-value">{userData.correo}</div>
               </div>
 
               <div className="courier-info-item">
                 <div className="courier-info-label">📞 Número de Teléfono:</div>
-                <div className="courier-info-value">{userData.phone}</div>
+                <div className="courier-info-value">{userData.telefono}</div>
               </div>
 
               <div className="courier-info-item">
                 <div className="courier-info-label">📍 Dirección:</div>
-                <div className="courier-info-value">{userData.address}</div>
+                <div className="courier-info-value">{userData.detalleDireccion}</div>
               </div>
 
               <div className="courier-info-item">
-                <div className="courier-info-label">📅 Fecha de registro</div>
-                <div className="courier-info-value">{userData.registrationDate}</div>
+                <div className="courier-info-label">🏙️ Ciudad:</div>
+                <div className="courier-info-value">{userData.nombreCiudad}</div>
+              </div>
+
+              <div className="courier-info-item">
+                <div className="courier-info-label">🗺️ Departamento:</div>
+                <div className="courier-info-value">{userData.nombreDepartamento}</div>
+              </div>
+
+              <div className="courier-info-item">
+                <div className="courier-info-label">👥 Tipo de Usuario:</div>
+                <div className="courier-info-value">{userData.nombreRol}</div>
+              </div>
+
+              <div className="courier-info-item">
+                <div className="courier-info-label">📅 Fecha de registro:</div>
+                <div className="courier-info-value">{new Date(userData.fechaRegistro).toLocaleDateString('es-ES')}</div>
               </div>
             </div>
           </div>
