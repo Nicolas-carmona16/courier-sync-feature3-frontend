@@ -1,9 +1,9 @@
-"use client" 
+"use client"
 
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { useApolloClient, useMutation } from '@apollo/client'
+import { graphqlRequest } from "@/lib/api-client"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { BackLink } from "@/components/back-link"
@@ -11,19 +11,20 @@ import { CourierLogo } from "@/components/courier-logo"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-// Removed selects due to empty options in dev-open; using numeric text inputs instead
 import { PasswordInput } from "@/components/password-input"
 import { validateForm, type ValidationErrors } from "@/components/form-validation"
 import { useCreateUsuario } from "@/hooks/use-usuario"
-import { GET_DEPARTAMENTOS, GET_CIUDADES_BY_DEPARTAMENTO, GET_ROLES, CREATE_DEPARTAMENTO, CREATE_CIUDAD, CREATE_ROL } from '@/lib/graphql/queries'
-// Reference data hooks not needed when using raw ID inputs
+import {
+  GET_DEPARTAMENTOS,
+  GET_CIUDADES_BY_DEPARTAMENTO,
+  GET_ROLES,
+  CREATE_DEPARTAMENTO,
+  CREATE_CIUDAD,
+  CREATE_ROL,
+} from "@/lib/graphql/queries"
 
 export default function RegisterPage() {
   const router = useRouter()
-  const client = useApolloClient()
-  const [createDepartamento] = useMutation(CREATE_DEPARTAMENTO)
-  const [createCiudad] = useMutation(CREATE_CIUDAD)
-  const [createRol] = useMutation(CREATE_ROL)
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -35,38 +36,33 @@ export default function RegisterPage() {
     ciudadNombre: "",
     rolNombre: "",
   })
-  
-  const [createUsuario] = useCreateUsuario()
-  // Using raw ID inputs for departamento/ciudad/rol to avoid empty selects during dev
-  
+
+  const [createUsuario, { loading: createLoading }] = useCreateUsuario()
+
   const [errors, setErrors] = useState<ValidationErrors>({})
   const [isLoading, setIsLoading] = useState(false)
 
   // Normaliza strings para comparación (quita acentos, trim, minúsculas)
-  const normalize = (s: string) => (s ?? "").normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+  const normalize = (s: string) =>
+    (s ?? "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim()
 
-  // Variantes robustas: buscar o crear y manejar conflictos de unicidad
   async function ensureDepartamentoIdSafe(nombre: string): Promise<string> {
     const n = normalize(nombre)
-    const list = await client.query({
-      query: GET_DEPARTAMENTOS,
-      variables: { page: 0, size: 1000 },
-      fetchPolicy: 'no-cache',
-    })
-    const found = list?.data?.departamentos?.content?.find((d: any) => normalize(String(d.nombreDepartamento)) === n)
+    const list = await graphqlRequest(GET_DEPARTAMENTOS, { page: 0, size: 1000 })
+    const found = list?.departamentos?.content?.find((d: any) => normalize(String(d.nombreDepartamento)) === n)
     if (found) return String(found.idDepartamento)
     try {
-      const created = await createDepartamento({ variables: { input: { nombreDepartamento: nombre } } })
-      return String(created.data.createDepartamento.idDepartamento)
+      const created = await graphqlRequest(CREATE_DEPARTAMENTO, { input: { nombreDepartamento: nombre } })
+      return String(created.createDepartamento.idDepartamento)
     } catch (err: any) {
-      const msg = err?.graphQLErrors?.[0]?.message?.toLowerCase?.() || ''
-      if (msg.includes('existe') || msg.includes('conflict')) {
-        const again = await client.query({
-          query: GET_DEPARTAMENTOS,
-          variables: { page: 0, size: 1000 },
-          fetchPolicy: 'no-cache',
-        })
-        const f2 = again?.data?.departamentos?.content?.find((d: any) => normalize(String(d.nombreDepartamento)) === n)
+      const msg = err?.message?.toLowerCase?.() || ""
+      if (msg.includes("existe") || msg.includes("conflict")) {
+        const again = await graphqlRequest(GET_DEPARTAMENTOS, { page: 0, size: 1000 })
+        const f2 = again?.departamentos?.content?.find((d: any) => normalize(String(d.nombreDepartamento)) === n)
         if (f2) return String(f2.idDepartamento)
       }
       throw err
@@ -75,25 +71,17 @@ export default function RegisterPage() {
 
   async function ensureRolIdSafe(nombre: string): Promise<string> {
     const n = normalize(nombre)
-    const list = await client.query({
-      query: GET_ROLES,
-      variables: { page: 0, size: 1000 },
-      fetchPolicy: 'no-cache',
-    })
-    const found = list?.data?.roles?.content?.find((r: any) => normalize(String(r.nombreRol)) === n)
+    const list = await graphqlRequest(GET_ROLES, { page: 0, size: 1000 })
+    const found = list?.roles?.content?.find((r: any) => normalize(String(r.nombreRol)) === n)
     if (found) return String(found.idRol)
     try {
-      const created = await createRol({ variables: { input: { nombreRol: nombre } } })
-      return String(created.data.createRol.idRol)
+      const created = await graphqlRequest(CREATE_ROL, { input: { nombreRol: nombre } })
+      return String(created.createRol.idRol)
     } catch (err: any) {
-      const msg = err?.graphQLErrors?.[0]?.message?.toLowerCase?.() || ''
-      if (msg.includes('existe') || msg.includes('conflict')) {
-        const again = await client.query({
-          query: GET_ROLES,
-          variables: { page: 0, size: 1000 },
-          fetchPolicy: 'no-cache',
-        })
-        const f2 = again?.data?.roles?.content?.find((r: any) => normalize(String(r.nombreRol)) === n)
+      const msg = err?.message?.toLowerCase?.() || ""
+      if (msg.includes("existe") || msg.includes("conflict")) {
+        const again = await graphqlRequest(GET_ROLES, { page: 0, size: 1000 })
+        const f2 = again?.roles?.content?.find((r: any) => normalize(String(r.nombreRol)) === n)
         if (f2) return String(f2.idRol)
       }
       throw err
@@ -102,72 +90,27 @@ export default function RegisterPage() {
 
   async function ensureCiudadIdSafe(nombre: string, idDepartamento: string): Promise<string> {
     const n = normalize(nombre)
-    const list = await client.query({
-      query: GET_CIUDADES_BY_DEPARTAMENTO,
-      variables: { idDepartamento, page: 0, size: 1000 },
-      fetchPolicy: 'no-cache',
-    })
-    const found = list?.data?.ciudadesByDepartamento?.content?.find((c: any) => normalize(String(c.nombreCiudad)) === n)
+    const list = await graphqlRequest(GET_CIUDADES_BY_DEPARTAMENTO, { idDepartamento, page: 0, size: 1000 })
+    const found = list?.ciudadesByDepartamento?.content?.find((c: any) => normalize(String(c.nombreCiudad)) === n)
     if (found) return String(found.idCiudad)
     try {
-      const created = await createCiudad({ variables: { input: { nombreCiudad: nombre, idDepartamento } } })
-      return String(created.data.createCiudad.idCiudad)
+      const created = await graphqlRequest(CREATE_CIUDAD, { input: { nombreCiudad: nombre, idDepartamento } })
+      return String(created.createCiudad.idCiudad)
     } catch (err: any) {
-      const msg = err?.graphQLErrors?.[0]?.message?.toLowerCase?.() || ''
-      if (msg.includes('existe') || msg.includes('conflict')) {
-        const again = await client.query({
-          query: GET_CIUDADES_BY_DEPARTAMENTO,
-          variables: { idDepartamento, page: 0, size: 1000 },
-          fetchPolicy: 'no-cache',
-        })
-        const f2 = again?.data?.ciudadesByDepartamento?.content?.find((c: any) => normalize(String(c.nombreCiudad)) === n)
+      const msg = err?.message?.toLowerCase?.() || ""
+      if (msg.includes("existe") || msg.includes("conflict")) {
+        const again = await graphqlRequest(GET_CIUDADES_BY_DEPARTAMENTO, { idDepartamento, page: 0, size: 1000 })
+        const f2 = again?.ciudadesByDepartamento?.content?.find((c: any) => normalize(String(c.nombreCiudad)) === n)
         if (f2) return String(f2.idCiudad)
       }
       throw err
     }
   }
 
-  // Helpers: buscar/crear por nombre y devolver IDs numéricos como string
-  async function ensureDepartamentoId(nombre: string): Promise<string> {
-    const { data } = await client.query({
-      query: GET_DEPARTAMENTOS,
-      variables: { page: 0, size: 1000 },
-      fetchPolicy: 'no-cache',
-    })
-    const found = data?.departamentos?.content?.find((d: any) => String(d.nombreDepartamento).toLowerCase() === nombre.toLowerCase())
-    if (found) return String(found.idDepartamento)
-    const created = await createDepartamento({ variables: { input: { nombreDepartamento: nombre } } })
-    return String(created.data.createDepartamento.idDepartamento)
-  }
-
-  async function ensureRolId(nombre: string): Promise<string> {
-    const { data } = await client.query({
-      query: GET_ROLES,
-      variables: { page: 0, size: 1000 },
-      fetchPolicy: 'no-cache',
-    })
-    const found = data?.roles?.content?.find((r: any) => String(r.nombreRol).toLowerCase() === nombre.toLowerCase())
-    if (found) return String(found.idRol)
-    const created = await createRol({ variables: { input: { nombreRol: nombre } } })
-    return String(created.data.createRol.idRol)
-  }
-
-  async function ensureCiudadId(nombre: string, idDepartamento: string): Promise<string> {
-    const { data } = await client.query({
-      query: GET_CIUDADES_BY_DEPARTAMENTO,
-      variables: { idDepartamento, page: 0, size: 1000 },
-      fetchPolicy: 'no-cache',
-    })
-    const found = data?.ciudadesByDepartamento?.content?.find((c: any) => String(c.nombreCiudad).toLowerCase() === nombre.toLowerCase())
-    if (found) return String(found.idCiudad)
-    const created = await createCiudad({ variables: { input: { nombreCiudad: nombre, idDepartamento } } })
-    return String(created.data.createCiudad.idCiudad)
-  }
-
   // Reset ciudad cuando cambia el departamento (por nombre)
   useEffect(() => {
     if (formData.departamentoNombre) {
-      setFormData(prev => ({ ...prev, ciudadNombre: "" }))
+      setFormData((prev) => ({ ...prev, ciudadNombre: "" }))
     }
   }, [formData.departamentoNombre])
 
@@ -226,7 +169,6 @@ export default function RegisterPage() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }))
     }
@@ -244,33 +186,29 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      // Resolver IDs desde nombres, creando recursos si no existen
       const depId = await ensureDepartamentoIdSafe(formData.departamentoNombre.trim())
       const rolId = await ensureRolIdSafe(formData.rolNombre.trim())
       const ciudadId = await ensureCiudadIdSafe(formData.ciudadNombre.trim(), depId)
 
       const result = await createUsuario({
-        variables: {
-          input: {
-            nombre: formData.fullName,
-            correo: formData.email,
-            telefono: formData.phone,
-            detalleDireccion: formData.address,
-            idCiudad: ciudadId,
-            idDepartamento: depId,
-            idRol: rolId,
-          }
-        }
+        input: {
+          nombre: formData.fullName,
+          correo: formData.email,
+          telefono: formData.phone,
+          detalleDireccion: formData.address,
+          idCiudad: ciudadId,
+          idDepartamento: depId,
+          idRol: rolId,
+        },
       })
 
       if (result.data?.createUsuario) {
-        // Store user data in localStorage or context for now
-        localStorage.setItem('currentUser', JSON.stringify(result.data.createUsuario))
+        localStorage.setItem("currentUser", JSON.stringify(result.data.createUsuario))
         router.push("/profile")
       }
     } catch (error: any) {
       console.error("Registration error:", error)
-      const errorMessage = error.graphQLErrors?.[0]?.message || "Error al crear la cuenta. Intenta nuevamente."
+      const errorMessage = error?.message || "Error al crear la cuenta. Intenta nuevamente."
       setErrors({ general: errorMessage })
     } finally {
       setIsLoading(false)
@@ -381,9 +319,7 @@ export default function RegisterPage() {
                   className={errors.phone ? "border-red-500" : ""}
                 />
                 {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
-                <small className="text-gray-500 text-sm">
-                  Ingresa exactamente 10 dígitos sin espacios ni símbolos
-                </small>
+                <small className="text-gray-500 text-sm">Ingresa exactamente 10 dígitos sin espacios ni símbolos</small>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="address" className="text-black font-semibold">
@@ -472,6 +408,3 @@ export default function RegisterPage() {
     </div>
   )
 }
-
-
-

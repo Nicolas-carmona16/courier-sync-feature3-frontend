@@ -1,4 +1,3 @@
-
 # CourierSync – Feature 3: Gestión de Clientes (Frontend)
 
 <div align="center">
@@ -25,13 +24,13 @@ CourierSync es un sistema web diseñado para optimizar los procesos logísticos 
 
 ## 📁 Estructura del Proyecto
 
-```
+\`\`\`
 ├── app/           # Páginas y componentes principales
 ├── public/        # Archivos estáticos
 ├── package.json   # Dependencias y scripts
 ├── next.config.ts # Configuración de Next.js
 └── ...
-```
+\`\`\`
 
 ---
 
@@ -70,22 +69,20 @@ La Gestión de Clientes aporta un valor estratégico al sistema CourierSync al p
 ## 🚀 Instalación y Ejecución del Frontend
 
 1. **Clona el repositorio:**
-	```bash
+	\`\`\`bash
 	git clone https://github.com/Nicolas-carmona16/courier-sync-feature3-frontend.git
-	```
+	\`\`\`
 
 2. **Instala las dependencias:**
-	```bash
+	\`\`\`bash
 	npm install
-	```
+	\`\`\`
 
 3. **Ejecuta la aplicación en modo desarrollo:**
-	```bash
+	\`\`\`bash
 	npm run dev
-	```
+	\`\`\`
 
 4. Abre tu navegador en [http://localhost:3000](http://localhost:3000) para ver la aplicación.
 
 ---
-
-

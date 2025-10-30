@@ -2,14 +2,13 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { ApolloProviderWrapper } from "@/components/apollo-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "CourierSync - Gestión profesional de entregas",
   description: "Plataforma de gestión de entregas y datos personales",
-    generator: 'v0.app'
+  generator: "v0.app",
 }
 
 export default function RootLayout({
@@ -19,9 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className={inter.className}>
-        <ApolloProviderWrapper>{children}</ApolloProviderWrapper>
-      </body>
+      <body className={inter.className}>{children}</body>
     </html>
   )
 }
