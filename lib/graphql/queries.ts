@@ -1,7 +1,5 @@
-import { gql } from '@apollo/client'
-
 // Queries for Usuario
-export const GET_USUARIO_BY_ID = gql`
+export const GET_USUARIO_BY_ID = `
   query UsuarioById($id: ID!) {
     usuarioById(id: $id) {
       idUsuario
@@ -20,7 +18,7 @@ export const GET_USUARIO_BY_ID = gql`
   }
 `
 
-export const SEARCH_USUARIOS = gql`
+export const SEARCH_USUARIOS = `
   query SearchUsuarios($q: String, $page: Int, $size: Int) {
     searchUsuarios(q: $q, page: $page, size: $size) {
       content {
@@ -48,7 +46,7 @@ export const SEARCH_USUARIOS = gql`
 `
 
 // Mutations for Usuario
-export const CREATE_USUARIO = gql`
+export const CREATE_USUARIO = `
   mutation CreateUsuario($input: CreateUsuarioInput!) {
     createUsuario(input: $input) {
       idUsuario
@@ -67,7 +65,7 @@ export const CREATE_USUARIO = gql`
   }
 `
 
-export const UPDATE_USUARIO = gql`
+export const UPDATE_USUARIO = `
   mutation UpdateUsuario($input: UpdateUsuarioInput!) {
     updateUsuario(input: $input) {
       idUsuario
@@ -86,14 +84,14 @@ export const UPDATE_USUARIO = gql`
   }
 `
 
-export const DELETE_USUARIO = gql`
+export const DELETE_USUARIO = `
   mutation DeleteUsuario($id: ID!) {
     deleteUsuario(id: $id)
   }
 `
 
 // Mutations for reference data (create if not exists)
-export const CREATE_DEPARTAMENTO = gql`
+export const CREATE_DEPARTAMENTO = `
   mutation CreateDepartamento($input: CreateDepartamentoInput!) {
     createDepartamento(input: $input) {
       idDepartamento
@@ -102,7 +100,7 @@ export const CREATE_DEPARTAMENTO = gql`
   }
 `
 
-export const CREATE_CIUDAD = gql`
+export const CREATE_CIUDAD = `
   mutation CreateCiudad($input: CreateCiudadInput!) {
     createCiudad(input: $input) {
       idCiudad
@@ -113,7 +111,7 @@ export const CREATE_CIUDAD = gql`
   }
 `
 
-export const CREATE_ROL = gql`
+export const CREATE_ROL = `
   mutation CreateRol($input: CreateRolInput!) {
     createRol(input: $input) {
       idRol
@@ -123,7 +121,7 @@ export const CREATE_ROL = gql`
 `
 
 // Queries for Roles
-export const GET_ROLES = gql`
+export const GET_ROLES = `
   query Roles($page: Int, $size: Int) {
     roles(page: $page, size: $size) {
       content {
@@ -141,7 +139,7 @@ export const GET_ROLES = gql`
 `
 
 // Queries for Departamentos
-export const GET_DEPARTAMENTOS = gql`
+export const GET_DEPARTAMENTOS = `
   query Departamentos($page: Int, $size: Int) {
     departamentos(page: $page, size: $size) {
       content {
@@ -159,7 +157,7 @@ export const GET_DEPARTAMENTOS = gql`
 `
 
 // Queries for Ciudades
-export const GET_CIUDADES_BY_DEPARTAMENTO = gql`
+export const GET_CIUDADES_BY_DEPARTAMENTO = `
   query CiudadesByDepartamento($idDepartamento: ID!, $page: Int, $size: Int) {
     ciudadesByDepartamento(idDepartamento: $idDepartamento, page: $page, size: $size) {
       content {
@@ -178,7 +176,7 @@ export const GET_CIUDADES_BY_DEPARTAMENTO = gql`
   }
 `
 
-export const SEARCH_CIUDADES = gql`
+export const SEARCH_CIUDADES = `
   query SearchCiudades($q: String, $page: Int, $size: Int) {
     searchCiudades(q: $q, page: $page, size: $size) {
       content {
