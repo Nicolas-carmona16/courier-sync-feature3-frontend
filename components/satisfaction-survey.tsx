@@ -8,11 +8,12 @@ import { markSurveySkipped, readSurvey, saveSurvey, type SurveyPayload } from "@
 
 interface SatisfactionSurveyProps {
   onSubmitted?: (payload: SurveyPayload) => void
+  storageKey?: string
 }
 
 const ratingOptions = [1, 2, 3, 4, 5]
 
-export function SatisfactionSurvey({ onSubmitted }: SatisfactionSurveyProps) {
+export function SatisfactionSurvey({ onSubmitted, storageKey }: SatisfactionSurveyProps) {
   const [rating, setRating] = useState<number | null>(null)
   const [comment, setComment] = useState("")
   const [status, setStatus] = useState<"pending" | "submitted" | "skipped">("pending")
@@ -21,7 +22,7 @@ export function SatisfactionSurvey({ onSubmitted }: SatisfactionSurveyProps) {
 
   useEffect(() => {
     let mounted = true
-    readSurvey().then((stored) => {
+    readSurvey(storageKey).then((stored) => {
       if (!mounted || !stored) return
       setStatus(stored.status)
       setLastResponse(stored)
@@ -42,7 +43,7 @@ export function SatisfactionSurvey({ onSubmitted }: SatisfactionSurveyProps) {
       status: "submitted",
       createdAt: new Date().toISOString(),
     }
-    await saveSurvey(payload)
+    await saveSurvey(payload, storageKey)
     setStatus("submitted")
     setLastResponse(payload)
     setSubmitting(false)
@@ -51,7 +52,7 @@ export function SatisfactionSurvey({ onSubmitted }: SatisfactionSurveyProps) {
 
   const handleSkip = async () => {
     setSubmitting(true)
-    await markSurveySkipped()
+    await markSurveySkipped(storageKey)
     setStatus("skipped")
     setSubmitting(false)
   }

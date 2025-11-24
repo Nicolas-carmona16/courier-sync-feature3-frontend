@@ -11,10 +11,12 @@ import { SEARCH_USUARIOS } from "@/lib/graphql/queries"
 import { Usuario } from "@/lib/graphql/types"
 import { useAuth } from "@/hooks/use-auth"
 import { recordAudit } from "@/lib/audit"
+import { SatisfactionSurvey } from "@/components/satisfaction-survey"
 
 export default function DashboardPage() {
   const router = useRouter()
   const { session, isAdmin, isAgent, loading, user } = useAuth()
+  const isClient = session && !isAdmin && !isAgent
 
   const { data, loading: loadingUsers } = useQuery(SEARCH_USUARIOS, {
     variables: { q: "", page: 0, size: 10 },
@@ -90,6 +92,25 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {isClient && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Pedido de prueba</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">Pedido #CS-001</p>
+                  <p className="text-lg font-semibold text-black">Combo demo domicilio</p>
+                  <p className="text-sm text-gray-600">Entregado a Cliente Demo</p>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm font-semibold">Entregado</span>
+              </div>
+              <SatisfactionSurvey storageKey={session.email || session.username || "cliente-demo"} />
+            </CardContent>
+          </Card>
+        )}
 
         {isAdmin && (
           <Card>

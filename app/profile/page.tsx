@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button"
 import { StatusBadge } from "@/components/status-badge"
 import { SatisfactionSurvey } from "@/components/satisfaction-survey"
 import { Usuario } from "@/lib/graphql/types"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function ProfilePage() {
   const [userData, setUserData] = useState<Usuario | null>(null)
+  const { session } = useAuth()
 
   useEffect(() => {
     // Get user data from localStorage (in a real app, this would come from auth context)
@@ -106,7 +108,7 @@ export default function ProfilePage() {
 
         {/* Right Column */}
         <div className="courier-sidebar space-y-6">
-          <SatisfactionSurvey />
+          <SatisfactionSurvey storageKey={session?.email || session?.username || "perfil-demo"} />
 
           <div>
             <h3 className="text-xl font-semibold text-black mb-3">Datos Personales</h3>

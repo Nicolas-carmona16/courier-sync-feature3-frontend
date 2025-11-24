@@ -36,13 +36,18 @@ async function getKey() {
   return window.crypto.subtle.importKey("raw", encoder.encode(SECRET), { name: "AES-GCM" }, false, ["encrypt", "decrypt"])
 }
 
-export async function saveSurvey(payload: SurveyPayload) {
+function scopedKey(key?: string) {
+  return key ? `${STORAGE_KEY}:${key}` : STORAGE_KEY
+}
+
+export async function saveSurvey(payload: SurveyPayload, key?: string) {
   if (typeof window === "undefined") return
+  const storageKey = scopedKey(key)
 
   try {
     const key = await getKey()
     if (!key || !encoder) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+      localStorage.setItem(storageKey, JSON.stringify(payload))
       return
     }
 
@@ -50,7 +55,7 @@ export async function saveSurvey(payload: SurveyPayload) {
     const cipher = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoder.encode(JSON.stringify(payload)))
 
     localStorage.setItem(
-      STORAGE_KEY,
+      storageKey,
       JSON.stringify({
         iv: toBase64(iv.buffer),
         cipher: toBase64(cipher),
@@ -61,9 +66,9 @@ export async function saveSurvey(payload: SurveyPayload) {
   }
 }
 
-export async function readSurvey(): Promise<SurveyPayload | null> {
+export async function readSurvey(key?: string): Promise<SurveyPayload | null> {
   if (typeof window === "undefined") return null
-  const raw = localStorage.getItem(STORAGE_KEY)
+  const raw = localStorage.getItem(scopedKey(key))
   if (!raw) return null
 
   try {
@@ -86,11 +91,11 @@ export async function readSurvey(): Promise<SurveyPayload | null> {
   }
 }
 
-export async function markSurveySkipped() {
-  await saveSurvey({ rating: 0, status: "skipped", createdAt: new Date().toISOString() })
+export async function markSurveySkipped(key?: string) {
+  await saveSurvey({ rating: 0, status: "skipped", createdAt: new Date().toISOString() }, key)
 }
 
-export async function clearSurvey() {
+export async function clearSurvey(key?: string) {
   if (typeof window === "undefined") return
-  localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem(scopedKey(key))
 }

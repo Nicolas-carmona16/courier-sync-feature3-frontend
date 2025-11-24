@@ -14,6 +14,14 @@ const STORAGE_KEY = "couriersync_auth_session"
 const issuer = process.env.NEXT_PUBLIC_AUTH_ISSUER || process.env.NEXT_PUBLIC_OAUTH2_ISSUER_URI || "http://localhost:8090/realms/couriersync"
 const clientId = process.env.NEXT_PUBLIC_AUTH_CLIENT_ID || process.env.NEXT_PUBLIC_OAUTH2_CLIENT_ID || "couriersync-frontend"
 const clientSecret = process.env.AUTH_CLIENT_SECRET
+// Demo por defecto; solo se desactiva con NEXT_PUBLIC_DEMO_MODE="false"
+const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE !== "false"
+
+const demoUsers: Record<string, { roles: Role[] }> = {
+  "admin@demo.com": { roles: ["ADMIN"] },
+  "agente@demo.com": { roles: ["AGENTE"] },
+  "cliente@demo.com": { roles: ["CLIENTE"] },
+}
 
 function decodeJwt(token: string): any | null {
   try {
@@ -49,6 +57,24 @@ export function clearSession() {
 }
 
 export async function loginWithPassword(username: string, password: string): Promise<AuthSession> {
+  if (isDemo) {
+    const entry = demoUsers[username.toLowerCase()]
+    if (!entry) {
+      throw new Error("Usuario demo no reconocido. Usa admin@demo.com o agente@demo.com")
+    }
+    const now = Math.floor(Date.now() / 1000)
+    const session: AuthSession = {
+      accessToken: "demo-token",
+      refreshToken: "demo-refresh",
+      expiresAt: now + 3600,
+      email: username.toLowerCase(),
+      username,
+      roles: entry.roles,
+    }
+    saveSession(session)
+    return session
+  }
+
   const tokenEndpoint = `${issuer.replace(/\/$/, "")}/protocol/openid-connect/token`
 
   const body = new URLSearchParams({
@@ -112,6 +138,13 @@ export function isSessionExpired(session: AuthSession | null): boolean {
 
 // Placeholder for refresh token flow (Keycloak)
 export async function refreshSession(existing: AuthSession): Promise<AuthSession | null> {
+  if (isDemo) {
+    const now = Math.floor(Date.now() / 1000)
+    const refreshed = { ...existing, expiresAt: now + 3600 }
+    saveSession(refreshed)
+    return refreshed
+  }
+
   if (!existing.refreshToken) return null
   const tokenEndpoint = `${issuer.replace(/\/$/, "")}/protocol/openid-connect/token`
 

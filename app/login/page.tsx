@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/use-auth"
 export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuth()
+  const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === "true"
 
   const [formData, setFormData] = useState({
     email: "",
@@ -31,7 +32,7 @@ export default function LoginPage() {
     },
     password: {
       required: true,
-      minLength: 6,
+      minLength: 1,
     },
   }
 
@@ -59,7 +60,10 @@ export default function LoginPage() {
       router.push("/dashboard")
     } catch (error) {
       console.error("Login error:", error)
-      setErrors({ general: "Error al iniciar sesión. Verifica tus credenciales o intenta nuevamente." })
+      const message = isDemo
+        ? "Error en modo demo. Usa admin@demo.com, agente@demo.com o cliente@demo.com (cualquier contraseña)."
+        : "Error al iniciar sesión. Verifica tus credenciales o intenta nuevamente."
+      setErrors({ general: message })
     } finally {
       setIsLoading(false)
     }
