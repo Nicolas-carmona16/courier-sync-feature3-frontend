@@ -56,6 +56,11 @@
   body {
     @apply bg-gray-50 text-foreground font-sans;
   }
+
+  :focus-visible {
+    outline: 3px solid #f97316;
+    outline-offset: 3px;
+  }
 }
 
 /* Custom component styles */
@@ -138,4 +143,75 @@
 
 .courier-alert-info {
   @apply bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded-lg flex items-center gap-2 mb-5;
+}
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  padding: 0.5rem 1rem;
+  background: #111;
+  color: #fff;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Modo accesible: alto contraste y tipografía más legible */
+.accessible-mode {
+  --background: 0 0% 4%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 7%;
+  --card-foreground: 0 0% 98%;
+  --primary: 213 100% 55%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 20%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 20%;
+  --muted-foreground: 0 0% 90%;
+  --accent: 32 100% 50%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 85% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 60%;
+  --input: 0 0% 40%;
+  --ring: 32 100% 50%;
+}
+
+.accessible-mode body {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  background-color: #0b0b0b;
+  color: #f8fafc;
+}
+
+.accessible-mode .courier-card {
+  @apply border-2 border-white;
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+.accessible-mode .courier-sidebar {
+  background-color: #0f172a;
+  color: #f8fafc;
+  @apply border border-white;
+}
+
+.accessible-mode .courier-back-link,
+.accessible-mode .courier-info-label,
+.accessible-mode .courier-info-value {
+  color: #f8fafc;
+}
+
+.accessible-mode button,
+.accessible-mode input,
+.accessible-mode textarea,
+.accessible-mode select {
+  border-width: 2px;
+}
+
+.accessible-mode .courier-status-badge {
+  @apply border border-white;
 }
