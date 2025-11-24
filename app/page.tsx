@@ -10,7 +10,7 @@ export default function HomePage() {
         <div>
           <CourierLogo />
 
-          <h2 className="text-4xl font-bold text-black leading-tight mb-5">Bienvenido a tu plataforma de entregas</h2>
+          <h2 className="text-4xl font-bold text-black leading-tight mb-5">Bienvenido a tu plataforma de domicilios</h2>
 
           <p className="text-gray-600 text-lg leading-relaxed mb-10">
             CourierSync te permite gestionar tus datos personales de forma segura y eficiente. Mantén tu información

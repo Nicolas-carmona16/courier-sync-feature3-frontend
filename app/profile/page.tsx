@@ -6,6 +6,7 @@ import { BackLink } from "@/components/back-link"
 import { CourierLogo } from "@/components/courier-logo"
 import { Button } from "@/components/ui/button"
 import { StatusBadge } from "@/components/status-badge"
+import { SatisfactionSurvey } from "@/components/satisfaction-survey"
 import { Usuario } from "@/lib/graphql/types"
 
 export default function ProfilePage() {
@@ -104,12 +105,16 @@ export default function ProfilePage() {
         </div>
 
         {/* Right Column */}
-        <div className="courier-sidebar">
-          <h3 className="text-xl font-semibold text-black mb-3">Datos Personales</h3>
-          <p className="text-gray-600 leading-relaxed mb-10">
-            Tu información personal está protegida y solo se utiliza para mejorar tu experiencia en CourierSync. Puedes
-            editar estos datos en cualquier momento.
-          </p>
+        <div className="courier-sidebar space-y-6">
+          <SatisfactionSurvey />
+
+          <div>
+            <h3 className="text-xl font-semibold text-black mb-3">Datos Personales</h3>
+            <p className="text-gray-600 leading-relaxed mb-6">
+              Tu información personal está protegida y solo se utiliza para mejorar tu experiencia en CourierSync. Puedes
+              editar estos datos en cualquier momento.
+            </p>
+          </div>
 
           <div>
             <h3 className="text-xl font-semibold text-black mb-5">Estado de la cuenta</h3>

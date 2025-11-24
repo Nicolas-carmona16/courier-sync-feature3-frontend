@@ -11,10 +11,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PasswordInput } from "@/components/password-input"
 import { validateForm, type ValidationErrors } from "@/components/form-validation"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function LoginPage() {
   const router = useRouter()
-  
+  const { login } = useAuth()
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -53,37 +55,11 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      // NOTE: This is a basic login implementation for development
-      // The backend doesn't have authentication endpoints yet
-      // For now, we'll use a simple approach:
-      // 1. Check if user exists in localStorage (from registration)
-      // 2. In production, you should implement proper authentication
-      
-      const existingUser = localStorage.getItem('currentUser')
-      
-      if (existingUser) {
-        const user = JSON.parse(existingUser)
-        
-        // Check if email matches
-        if (user.correo.toLowerCase() === formData.email.toLowerCase()) {
-          // In a real app, you would validate the password hash here
-          // For now, we'll just check if password is not empty
-          if (formData.password.length > 0) {
-            console.log("Login successful:", user)
-            router.push("/profile")
-            return
-          }
-        }
-      }
-      
-      // If no existing user or email doesn't match
-      setErrors({ 
-        general: "Credenciales incorrectas. Si no tienes cuenta, regístrate primero." 
-      })
-      
+      await login(formData.email, formData.password)
+      router.push("/dashboard")
     } catch (error) {
       console.error("Login error:", error)
-      setErrors({ general: "Error al iniciar sesión. Intenta nuevamente." })
+      setErrors({ general: "Error al iniciar sesión. Verifica tus credenciales o intenta nuevamente." })
     } finally {
       setIsLoading(false)
     }
@@ -102,7 +78,7 @@ export default function LoginPage() {
 
           <p className="text-gray-600 leading-relaxed">
             Bienvenido, por favor inicia sesión para poder darte una experiencia personalizada en nuestro servicio de
-            envíos.
+            domicilios.
           </p>
         </div>
 

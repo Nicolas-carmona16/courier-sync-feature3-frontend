@@ -14,7 +14,7 @@
 ## 📌 Descripción General
 Este repositorio contiene únicamente el **frontend** de la Feature 3 – Gestión de Clientes del sistema CourierSync.
 
-CourierSync es un sistema web diseñado para optimizar los procesos logísticos de transporte y distribución de mercancías, mejorando la eficiencia operativa, la trazabilidad de los envíos y la experiencia de los clientes. La Feature 3 centraliza la información de los usuarios finales y ofrece herramientas para personalizar servicios, agilizar la comunicación y fortalecer la relación empresa–cliente.
+CourierSync es un sistema web orientado a domicilios (restaurantes, retail y pedidos rápidos) para optimizar la toma, seguimiento y entrega de pedidos, mejorando la eficiencia operativa y la experiencia de los clientes. La Feature 3 centraliza la información de los usuarios finales y ofrece herramientas para personalizar servicios, agilizar la comunicación y fortalecer la relación con los clientes frecuentes.
 
 ## 🛠️ Tecnologías Utilizadas
 
@@ -36,24 +36,24 @@ CourierSync es un sistema web diseñado para optimizar los procesos logísticos 
 ---
 
 ## 🎯 Objetivos del Proyecto
-- Centralizar la información de clientes en un módulo único y seguro.
-- Facilitar el registro y actualización de perfiles de clientes.
-- Permitir la consulta del historial de envíos por cliente.
-- Implementar notificaciones personalizadas (promociones y actualizaciones).
-- Medir la satisfacción del cliente mediante dashboards interactivos.
+- Centralizar la información de clientes y sus direcciones de entrega en un módulo único y seguro.
+- Facilitar el registro y actualización de perfiles para pedidos recurrentes de domicilios.
+- Permitir la consulta del historial de pedidos/domicilios por cliente.
+- Implementar notificaciones personalizadas (promociones y estado del pedido).
+- Medir la satisfacción del cliente en la experiencia de domicilios mediante dashboards interactivos.
 - Garantizar accesibilidad y cumplimiento de estándares de seguridad.
 
 ## 📦 Alcance
 **Incluye:**
 - CRUD de clientes (registro y actualización).
-- Historial de envíos asociado a cada cliente.
-- Notificaciones de promociones.
+- Historial de pedidos de domicilios asociado a cada cliente.
+- Notificaciones de promociones y estado de pedido.
 - Dashboard de satisfacción y métricas de experiencia.
 
 **No incluye:**
-- Gestión de envíos (Feature 1).
-- Optimización de rutas (Feature 2).
-- Inventario en tránsito (Feature 4).
+- Asignación y ruteo de repartidores en tiempo real (Feature 1).
+- Optimización avanzada de rutas (Feature 2).
+- Gestión de inventario de tiendas/socios (Feature 4).
 - Facturación y pagos (Feature 5).
 
 ## 👥 Roles y Stakeholders
