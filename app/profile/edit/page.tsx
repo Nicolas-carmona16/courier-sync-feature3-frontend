@@ -173,7 +173,7 @@ export default function EditProfilePage() {
       <div className="courier-two-column">
         {/* Left Column */}
         <div>
-          <BackLink href="/profile">Volver al perfil</BackLink>
+          <BackLink useBack>Volver</BackLink>
 
           <CourierLogo subtitle="Editar perfil" />
 

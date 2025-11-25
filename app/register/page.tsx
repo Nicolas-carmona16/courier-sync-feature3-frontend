@@ -282,7 +282,7 @@ export default function RegisterPage() {
       <div className="courier-two-column">
         {/* Left Column */}
         <div>
-          <BackLink href="/">Volver al inicio</BackLink>
+          <BackLink useBack>Volver</BackLink>
 
           <CourierLogo subtitle="Registro de cuenta" />
 

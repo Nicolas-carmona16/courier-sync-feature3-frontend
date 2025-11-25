@@ -74,7 +74,7 @@ export default function LoginPage() {
       <div className="courier-two-column">
         {/* Left Column */}
         <div>
-          <BackLink href="/">Volver al inicio</BackLink>
+          <BackLink useBack>Volver</BackLink>
 
           <CourierLogo subtitle="Inicio de sesión" />
 
