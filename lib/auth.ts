@@ -11,11 +11,9 @@ export interface AuthSession {
 
 const STORAGE_KEY = "couriersync_auth_session"
 
-const issuer = process.env.NEXT_PUBLIC_AUTH_ISSUER || process.env.NEXT_PUBLIC_OAUTH2_ISSUER_URI || "http://localhost:8090/realms/couriersync"
-const clientId = process.env.NEXT_PUBLIC_AUTH_CLIENT_ID || process.env.NEXT_PUBLIC_OAUTH2_CLIENT_ID || "couriersync-frontend"
-const clientSecret = process.env.AUTH_CLIENT_SECRET
 // Demo por defecto; solo se desactiva con NEXT_PUBLIC_DEMO_MODE="false"
 const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE !== "false"
+const graphqlEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || "https://back-fab-2025.onrender.com/graphql"
 
 const demoUsers: Record<string, { roles: Role[] }> = {
   "admin@demo.com": { roles: ["ADMIN"] },
@@ -56,6 +54,53 @@ export function clearSession() {
   localStorage.removeItem(STORAGE_KEY)
 }
 
+interface GraphQLResponse<T> {
+  data?: T
+  errors?: Array<{ message?: string }>
+}
+
+interface AuthPayload {
+  accessToken: string
+  refreshToken?: string
+  usuario?: {
+    correo?: string
+    nombreRol?: string
+  }
+}
+
+async function executeAuthMutation<T>(query: string, variables: Record<string, unknown>): Promise<T> {
+  const resp = await fetch(graphqlEndpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query, variables }),
+  })
+
+  const json = (await resp.json()) as GraphQLResponse<T>
+  if ("errors" in json && json.errors?.length) {
+    throw new Error(json.errors[0]?.message || "Error en autenticación")
+  }
+  if (!json.data) {
+    throw new Error("Respuesta inválida del servidor de autenticación")
+  }
+  return json.data
+}
+
+function buildSession(payload: AuthPayload, fallbackUsername: string): AuthSession {
+  const decoded = payload.accessToken ? decodeJwt(payload.accessToken) : null
+  const exp = decoded?.exp || Math.floor(Date.now() / 1000) + 900
+  const email = payload.usuario?.correo?.toLowerCase() || fallbackUsername.toLowerCase()
+  const roles: Role[] = payload.usuario?.nombreRol ? [payload.usuario.nombreRol.toUpperCase()] : ["CLIENTE"]
+
+  return {
+    accessToken: payload.accessToken,
+    refreshToken: payload.refreshToken,
+    expiresAt: exp,
+    email,
+    username: email,
+    roles,
+  }
+}
+
 export async function loginWithPassword(username: string, password: string): Promise<AuthSession> {
   if (isDemo) {
     const entry = demoUsers[username.toLowerCase()]
@@ -75,51 +120,23 @@ export async function loginWithPassword(username: string, password: string): Pro
     return session
   }
 
-  const tokenEndpoint = `${issuer.replace(/\/$/, "")}/protocol/openid-connect/token`
+  const { login } = await executeAuthMutation<{ login: AuthPayload }>(
+    `
+      mutation Login($email: String!, $password: String!) {
+        login(email: $email, password: $password) {
+          accessToken
+          refreshToken
+          usuario {
+            correo
+            nombreRol
+          }
+        }
+      }
+    `,
+    { email: username, password },
+  )
 
-  const body = new URLSearchParams({
-    grant_type: "password",
-    client_id: clientId,
-    username,
-    password,
-  })
-
-  if (clientSecret) {
-    body.append("client_secret", clientSecret)
-  }
-
-  const resp = await fetch(tokenEndpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: body.toString(),
-  })
-
-  if (!resp.ok) {
-    const errorText = await resp.text()
-    throw new Error(`Error de autenticación (${resp.status}): ${errorText}`)
-  }
-
-  const data = await resp.json()
-  const payload = decodeJwt(data.access_token)
-  const exp = payload?.exp || Math.floor(Date.now() / 1000) + 300
-
-  const roles: Role[] = Array.from(
-    new Set([
-      ...(payload?.realm_access?.roles || []),
-      ...(payload?.resource_access ? Object.values(payload.resource_access).flatMap((r: any) => r.roles || []) : []),
-    ]),
-  ).map((r: string) => r.toUpperCase())
-
-  const session: AuthSession = {
-    accessToken: data.access_token,
-    refreshToken: data.refresh_token,
-    expiresAt: exp,
-    email: payload?.email || payload?.preferred_username,
-    username: payload?.preferred_username,
-    roles,
-  }
+  const session = buildSession(login, username)
 
   saveSession(session)
   return session
@@ -146,41 +163,30 @@ export async function refreshSession(existing: AuthSession): Promise<AuthSession
   }
 
   if (!existing.refreshToken) return null
-  const tokenEndpoint = `${issuer.replace(/\/$/, "")}/protocol/openid-connect/token`
+  try {
+    const { refreshToken: refreshed } = await executeAuthMutation<{ refreshToken: AuthPayload }>(
+      `
+        mutation Refresh($token: String!) {
+          refreshToken(refreshToken: $token) {
+            accessToken
+            refreshToken
+            usuario {
+              correo
+              nombreRol
+            }
+          }
+        }
+      `,
+      { token: existing.refreshToken },
+    )
 
-  const body = new URLSearchParams({
-    grant_type: "refresh_token",
-    client_id: clientId,
-    refresh_token: existing.refreshToken,
-  })
-  if (clientSecret) body.append("client_secret", clientSecret)
+    const updated = buildSession(refreshed, existing.username || existing.email || "usuario")
 
-  const resp = await fetch(tokenEndpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: body.toString(),
-  })
-
-  if (!resp.ok) return null
-  const data = await resp.json()
-  const payload = decodeJwt(data.access_token)
-  const exp = payload?.exp || Math.floor(Date.now() / 1000) + 300
-  const roles: Role[] = Array.from(
-    new Set([
-      ...(payload?.realm_access?.roles || []),
-      ...(payload?.resource_access ? Object.values(payload.resource_access).flatMap((r: any) => r.roles || []) : []),
-    ]),
-  ).map((r: string) => r.toUpperCase())
-
-  const updated: AuthSession = {
-    accessToken: data.access_token,
-    refreshToken: data.refresh_token,
-    expiresAt: exp,
-    email: payload?.email || payload?.preferred_username,
-    username: payload?.preferred_username,
-    roles,
+    saveSession(updated)
+    return updated
+  } catch (error) {
+    console.error("No se pudo refrescar la sesión", error)
+    clearSession()
+    return null
   }
-
-  saveSession(updated)
-  return updated
 }
