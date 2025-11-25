@@ -1,7 +1,5 @@
 "use client"
 
-"use client"
-
 import { useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Navbar } from "@/components/navbar"
