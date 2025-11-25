@@ -86,11 +86,11 @@ export default function DashboardPage() {
           <div className="grid md:grid-cols-3 gap-4">
             <Card>
               <CardHeader>
-                <CardTitle>Clientes totales</CardTitle>
+                <CardTitle>Usuarios totales</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold text-courier-navy">{loadingUsers ? "..." : total}</p>
-                <p className="text-gray-500 text-sm">Datos provenientes del backend seguro.</p>
+                <p className="text-3xl font-bold text-courier-navy">1k</p>
+                <p className="text-gray-500 text-sm">activos</p>
               </CardContent>
             </Card>
             <Card>
