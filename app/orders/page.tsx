@@ -1,5 +1,7 @@
 "use client"
 
+"use client"
+
 import { useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Navbar } from "@/components/navbar"
@@ -8,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { SatisfactionSurvey } from "@/components/satisfaction-survey"
 import { useAuth } from "@/hooks/use-auth"
+import { useState } from "react"
+import { OrderDetailsModal } from "@/components/order-details-modal"
 
 const demoOrders = [
   {
@@ -39,8 +43,10 @@ const demoOrders = [
 export default function OrdersPage() {
   const router = useRouter()
   const { session } = useAuth()
+  const [openOrderId, setOpenOrderId] = useState<string | null>(null)
 
   const delivered = useMemo(() => demoOrders.filter((o) => o.status === "Entregado"), [])
+  const currentOrder = useMemo(() => demoOrders.find((o) => o.id === openOrderId), [openOrderId])
 
   return (
     <>
@@ -86,7 +92,7 @@ export default function OrdersPage() {
                     <SatisfactionSurvey storageKey={`order-${order.id}-${session?.email || "demo"}`} />
                   ) : (
                     <div className="flex items-center gap-3">
-                      <Button size="sm" className="bg-courier-navy text-white">
+                      <Button size="sm" className="bg-courier-navy text-white" onClick={() => setOpenOrderId(order.id)}>
                         Ver detalles
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => router.push("/dashboard")}>
@@ -112,6 +118,20 @@ export default function OrdersPage() {
           </Card>
         </div>
       </div>
+
+      {currentOrder && (
+        <OrderDetailsModal
+          open={Boolean(openOrderId)}
+          onOpenChange={(state) => !state && setOpenOrderId(null)}
+          order={{
+            ...currentOrder,
+            items: [
+              { name: "Combo demo domicilio", qty: 1, price: "$12.00" },
+              { name: "Propina repartidor", qty: 1, price: "$2.00" },
+            ],
+          }}
+        />
+      )}
     </>
   )
 }

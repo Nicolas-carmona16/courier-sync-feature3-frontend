@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useQuery } from "@apollo/client"
 import { CourierLogo } from "@/components/courier-logo"
@@ -13,11 +13,13 @@ import { SEARCH_USUARIOS } from "@/lib/graphql/queries"
 import { Usuario } from "@/lib/graphql/types"
 import { useAuth } from "@/hooks/use-auth"
 import { recordAudit } from "@/lib/audit"
+import { SensitiveDataModal } from "@/components/sensitive-data-modal"
 
 export default function DashboardPage() {
   const router = useRouter()
   const { session, isAdmin, isAgent, loading } = useAuth()
   const isClient = session && !isAdmin && !isAgent
+  const [openSensitive, setOpenSensitive] = useState(false)
 
   const { data, loading: loadingUsers } = useQuery(SEARCH_USUARIOS, {
     variables: { q: "", page: 0, size: 10 },
@@ -163,35 +165,14 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle>Datos sensibles (solo admin)</CardTitle>
               </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nombre</TableHead>
-                      <TableHead>Correo</TableHead>
-                      <TableHead>Ciudad</TableHead>
-                      <TableHead>Rol</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((u) => (
-                      <TableRow key={u.idUsuario}>
-                        <TableCell>{u.nombre}</TableCell>
-                        <TableCell>{u.correo}</TableCell>
-                        <TableCell>{u.nombreCiudad}</TableCell>
-                        <TableCell>{u.nombreRol}</TableCell>
-                      </TableRow>
-                    ))}
-                    {!loadingUsers && users.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-gray-500">
-                          No hay clientes disponibles.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-                <p className="text-xs text-gray-500 mt-2">
+              <CardContent className="space-y-2">
+                <p className="text-gray-700">
+                  Información sensible de clientes (dirección, documento, teléfono). Disponible solo para admins.
+                </p>
+                <Button className="bg-courier-navy text-white" onClick={() => setOpenSensitive(true)}>
+                  Ver datos sensibles
+                </Button>
+                <p className="text-xs text-gray-500">
                   Acceso cifrado via Bearer token. Todas las consultas quedan registradas localmente.
                 </p>
               </CardContent>
@@ -199,6 +180,8 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      <SensitiveDataModal open={openSensitive} onOpenChange={setOpenSensitive} />
     </>
   )
 }
