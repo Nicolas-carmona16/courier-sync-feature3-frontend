@@ -31,7 +31,7 @@ export default function ProfilePage() {
       <div className="courier-layout">
         <div className="courier-two-column">
           <div>
-            <BackLink href="/">Volver al inicio</BackLink>
+          <BackLink useBack>Volver</BackLink>
             <CourierLogo subtitle="Panel de usuario" />
             <div className="text-center py-10">
               <p className="text-gray-600">No hay datos de usuario disponibles.</p>
